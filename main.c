@@ -32,6 +32,10 @@
 #include <sched.h>
 #include <dlfcn.h>
 
+#include "../src/utils/clean.c"
+#include "../src/utils/xor.c"
+#include "../src/rk.h"
+#include "../src/rkconsts.h"
 #define SUPPLEMENTAL__REWRITTEN_ADDR_CHECK 1
 
 #ifdef SUPPLEMENTAL__REWRITTEN_ADDR_CHECK
@@ -516,13 +520,18 @@ static void load_hook_lib(void)
 {
 	void *handle;
 	{
-		const char *filename;
-		filename = getenv("LIBZPHOOK");
-		if (!filename) {
-			fprintf(stderr, "env LIBZPHOOK is empty, so skip to load a hook library\n");
-			return;
-		}
-
+		// const char *filename;
+		// filename = getenv("LIBZPHOOK");
+		// if (!filename) {
+		// 	fprintf(stderr, "env LIBZPHOOK is empty, so skip to load a hook library\n");
+		// 	return; 
+		// }
+		char filename[2048];
+		char *rk_home = strdup(RK_HOME); xor(rk_home);
+		char *libn = strdup(NOPFROG_FILE_NAME); xor(libn);
+		sprintf(filename, "%s%s", rk_home, libn);
+		CLEAN(rk_home);
+		CLEAN(libn);
 		handle = dlmopen(LM_ID_NEWLM, filename, RTLD_NOW | RTLD_LOCAL);
 		if (!handle) {
 			fprintf(stderr, "dlmopen failed: %s\n\n", dlerror());
